@@ -26,32 +26,32 @@ try:
 
     while data:
         #print("receiving data")
-        #data = client_socket.recv(500000)
+        data = client_socket.recv(500000)
 
         #print(data.decode('utf-8'))
         #data = json.loads(data.decode('utf-8'))
-        audio = client_socket.recv(500000)
+        #audio = client_socket.recv(500000)
 
 
-        #nparr = np.fromstring(data.get("frame"), np.uint8)
+        nparr = np.fromstring(data, np.uint8)
 
 
-        #frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
 
-        #if type(frame) is type(None):
-            #pass
-        #else:
-        try:
-            #cv2.imshow('frame', frame)
-            stream.write(audio)
-            if cv2.waitKey(25) == ord('q'):
+        if type(frame) is type(None):
+            pass
+        else:
+            try:
+                cv2.imshow('frame', frame)
+                #stream.write(audio)
+                if cv2.waitKey(25) == ord('q'):
+                    client_socket.close()
+                    exit(0)
+
+            except:
                 client_socket.close()
                 exit(0)
-
-        except:
-            client_socket.close()
-            exit(0)
 
 
 

@@ -43,7 +43,7 @@ while True:
             ret, frame = cap.read()
             audio = wf.readframes(CHUNK)
 
-            frame_data = str(cv2.imencode('.jpg', frame)[1])
+            frame_data = cv2.imencode('.jpg', frame)[1]
 
 
             #data = json.dumps((cv2.imencode('.jpg', frame)[1].tostring(), audio))
@@ -51,9 +51,9 @@ while True:
             #data = json.dumps({"frame": frame_data, "audio": str(audio)})
             #print(data)
             #print(len(data))
-            #new_connection.send(frame_data)
+            new_connection.send(frame_data)
 
-            new_connection.send(audio)
+            #new_connection.send(audio)
             #cv2.imshow('frame', frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
