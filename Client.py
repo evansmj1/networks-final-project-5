@@ -23,8 +23,11 @@ def getData():
 
             # Stuff to get video frame size
             client_socket.send("ready".encode())
-            vid_data = client_socket.recv(1024)
-            frame_size = int(vid_data.decode())
+            vid_data = client_socket.recv(64)
+            data_str = vid_data.decode()
+            print("Size: " + data_str)
+            print(type(data_str))
+            frame_size = int(data_str)
 
             print("Frame Size: " + str(frame_size))
             client_socket.send("Got it".encode())
@@ -41,7 +44,7 @@ def getData():
             #Stuff to get audio size
             audio_data = client_socket.recv(1024)
             audio_size = int(audio_data.decode())
-            print("Audio Size: " + str(audio_size))
+            #print("Audio Size: " + str(audio_size))
             client_socket.send("Got it".encode())
 
             #Get Audio

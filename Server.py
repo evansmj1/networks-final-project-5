@@ -53,8 +53,11 @@ def main():
                 frame_data = cv2.imencode('.jpg', frame)[1]
 
                 new_connection.recv(1024)
-                print("String size: " + str(sys.getsizeof(str(sys.getsizeof(frame_data)).encode())))
-                new_connection.send(str(sys.getsizeof(frame_data)).encode())
+                strsize = 64 - sys.getsizeof(str(sys.getsizeof(frame_data)).encode())
+                pad_data = str(sys.getsizeof(frame_data)).encode() + ("\0"*strsize).encode()
+                #print(pad_data)
+                print(sys.getsizeof(pad_data))
+                new_connection.send(pad_data)
                 new_connection.recv(1024)
                 new_connection.send(frame_data)
 
@@ -62,7 +65,7 @@ def main():
 
                 new_connection.recv(1024)
                 new_connection.send(str(sys.getsizeof(audio)).encode())
-                print("Audio Size: " + str(sys.getsizeof(audio)))
+                #print("Audio Size: " + str(sys.getsizeof(audio)))
                 new_connection.recv(1024)
                 new_connection.send(audio)
                 new_connection.recv(1024)
