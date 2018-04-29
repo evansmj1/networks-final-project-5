@@ -53,9 +53,10 @@ def main():
                 frame_data = cv2.imencode('.jpg', frame)[1]
 
                 new_connection.recv(1024)
-                strsize = 64 - sys.getsizeof(str(sys.getsizeof(frame_data)).encode())
-                pad_data = str(sys.getsizeof(frame_data)).encode() + ("\0"*strsize).encode()
-                #print(pad_data)
+                #strsize = 64 - sys.getsizeof(str(sys.getsizeof(frame_data)).encode())
+                strsize = 64 - sys.getsizeof(chr(sys.getsizeof(frame_data)).encode())
+                pad_data = chr(sys.getsizeof(frame_data)).encode() + ("\0"*strsize).encode()
+                print(pad_data)
                 print(sys.getsizeof(pad_data))
                 new_connection.send(pad_data)
                 new_connection.recv(1024)

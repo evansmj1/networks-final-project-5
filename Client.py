@@ -28,16 +28,13 @@ def getData():
             vid_data = vid_data.rstrip(b'\x00')
             print(vid_data)
             data_str = vid_data.decode()
-            print(data_str)
-            print("Size: " + data_str)
-            print(type(data_str))
-            frame_size = int(data_str)
+            frame_size = ord(data_str)
 
             print("Frame Size: " + str(frame_size))
             client_socket.send("Got it".encode())
 
             #Get Frame
-            vid_data = client_socket.recv(500000)
+            vid_data = client_socket.recv(frame_size)
 
             vidBuffer.append(vid_data)
             #print("Buffer Length: " + str(len(vidBuffer)))
