@@ -53,7 +53,7 @@ def main():
                 frame_data = cv2.imencode('.jpg', frame)[1]
 
                 new_connection.recv(1024)
-                print(sys.getsizeof(str(sys.getsizeof(frame_data)).encode()))
+                print("String size: " + str(sys.getsizeof(str(sys.getsizeof(frame_data)).encode())))
                 new_connection.send(str(sys.getsizeof(frame_data)).encode())
                 new_connection.recv(1024)
                 new_connection.send(frame_data)
