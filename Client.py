@@ -24,7 +24,11 @@ def getData():
             # Stuff to get video frame size
             client_socket.send("ready".encode())
             vid_data = client_socket.recv(64)
+            print(vid_data)
+            vid_data = vid_data.rstrip(b'\x00')
+            print(vid_data)
             data_str = vid_data.decode()
+            print(data_str)
             print("Size: " + data_str)
             print(type(data_str))
             frame_size = int(data_str)
