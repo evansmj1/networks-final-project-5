@@ -11,7 +11,7 @@ import threading
 
 
 def main():
-    CHUNK = 1024
+    CHUNK = 1838
 
     cap = cv2.VideoCapture("Man's Not Hot.mp4")
 
@@ -28,8 +28,11 @@ def main():
     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
                     channels=wf.getnchannels(),
                     rate=wf.getframerate(),
-                    output=True)
-
+                    output=True,
+                    frames_per_buffer=CHUNK)
+    print("Sample Width: " + str(wf.getsampwidth()))
+    print("Channels: " + str(wf.getnchannels()))
+    print("Frame Rate: " + str(wf.getframerate()))
 
     sock.listen(1)
 
@@ -42,22 +45,26 @@ def main():
         try:
             print('connection from', client_address)
 
-            while (True):
+            new_connection.send("Starting".encode())
+            while True:
                 ret, frame = cap.read()
                 audio = wf.readframes(CHUNK)
 
                 frame_data = cv2.imencode('.jpg', frame)[1]
 
-
-                #data = json.dumps((cv2.imencode('.jpg', frame)[1].tostring(), audio))
-
-                #data = json.dumps({"frame": frame_data, "audio": str(audio)})
-                #print(data)
-                #print(len(data))
+                # new_connection.recv(1024)
+                # print(sys.getsizeof(str(sys.getsizeof(frame_data)).encode()))
+                # new_connection.send(str(sys.getsizeof(frame_data)).encode())
+                # new_connection.recv(1024)
                 new_connection.send(frame_data)
 
-                #new_connection.send(audio)
-                #cv2.imshow('frame', frame)
+               # print("sending frame")
+
+                new_connection.recv(1024)
+                # new_connection.send(str(sys.getsizeof(audio)).encode())
+                # new_connection.recv(1024)
+                new_connection.send(audio)
+                # new_connection.recv(1024)
 
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
