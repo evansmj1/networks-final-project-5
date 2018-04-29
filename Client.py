@@ -22,12 +22,12 @@ def getData():
             # current_step = client_socket.recv(1024)
 
             # Stuff to get video frame size
-            # client_socket.send("ready".encode())
-            # vid_data = client_socket.recv(1024)
-            # frame_size = int(vid_data.decode())
-            #
-            # print("Frame Size: " + str(frame_size))
-            # client_socket.send("Got it".encode())
+            client_socket.send("ready".encode())
+            vid_data = client_socket.recv(1024)
+            frame_size = int(vid_data.decode())
+
+            print("Frame Size: " + str(frame_size))
+            client_socket.send("Got it".encode())
 
             #Get Frame
             vid_data = client_socket.recv(500000)
@@ -39,14 +39,14 @@ def getData():
             client_socket.send("need audio".encode())
 
             #Stuff to get audio size
-            #audio_data = client_socket.recv(1024)
-            #audio_size = int(audio_data.decode())
-            #print("Audio Size: " + str(audio_size))
-            #client_socket.send("Got it".encode())
+            audio_data = client_socket.recv(1024)
+            audio_size = int(audio_data.decode())
+            print("Audio Size: " + str(audio_size))
+            client_socket.send("Got it".encode())
 
             #Get Audio
-            audioBuffer.append(client_socket.recv(8192))
-            #client_socket.send("done".encode())
+            audioBuffer.append(client_socket.recv(7369))
+            client_socket.send("done".encode())
 
         print("whole video loaded")
     finally:

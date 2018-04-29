@@ -52,19 +52,20 @@ def main():
 
                 frame_data = cv2.imencode('.jpg', frame)[1]
 
-                # new_connection.recv(1024)
-                # print(sys.getsizeof(str(sys.getsizeof(frame_data)).encode()))
-                # new_connection.send(str(sys.getsizeof(frame_data)).encode())
-                # new_connection.recv(1024)
+                new_connection.recv(1024)
+                print(sys.getsizeof(str(sys.getsizeof(frame_data)).encode()))
+                new_connection.send(str(sys.getsizeof(frame_data)).encode())
+                new_connection.recv(1024)
                 new_connection.send(frame_data)
 
                # print("sending frame")
 
                 new_connection.recv(1024)
-                # new_connection.send(str(sys.getsizeof(audio)).encode())
-                # new_connection.recv(1024)
+                new_connection.send(str(sys.getsizeof(audio)).encode())
+                print("Audio Size: " + str(sys.getsizeof(audio)))
+                new_connection.recv(1024)
                 new_connection.send(audio)
-                # new_connection.recv(1024)
+                new_connection.recv(1024)
 
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
