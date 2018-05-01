@@ -71,7 +71,7 @@ def playVideo():
 
     #While there is video remaining
     while vidIndex < len(vidBuffer) - 1:
-        #If the playback isn't near the end of the buffer, give it time to load more
+        #If the playback isn't near the end of the buffer, let it play
         if audIndex < len(audioBuffer) - 10 and vidIndex < len(vidBuffer) - 10 and not videoFinished:
 
             #Set up the frame
@@ -119,6 +119,8 @@ def playVideo():
                     client_socket2.close()
                     exit(0)
             vidIndex += 1
+        else: #Otherwise, let it load more
+            pass
 
 def playAudio():
     global audIndex
@@ -134,7 +136,9 @@ def playAudio():
                     rate=44100,
                     output=True)
 
+
     while audIndex < len(audioBuffer) - 1:
+        #If the playback isn't near the end of the buffer, let it play.
         if audIndex < len(audioBuffer) - 10 and vidIndex < len(vidBuffer) - 10 and not audioFinished:
             stream.write(audioBuffer[audIndex])
 
@@ -145,7 +149,7 @@ def playAudio():
             #If fast forwarding video, fast forward audio
             if forward:
                 audIndex += 5
-                forward = True
+                forward = False
             #if pausing video, pause audio
             if pause:
                 while pause:
@@ -156,6 +160,8 @@ def playAudio():
                 pass
             else:
                 audIndex += 1
+        else: #Otherwise, let it load more
+            pass
 def main():
 
     threading.Thread(target=getVidData, args=[]).start()
