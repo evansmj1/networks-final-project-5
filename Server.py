@@ -1,13 +1,7 @@
-import sys
 import socket
 import cv2
-import time
 import pyaudio
 import wave
-import numpy
-import pickle
-import json
-import threading
 
 
 def main():

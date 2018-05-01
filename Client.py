@@ -1,19 +1,13 @@
 import cv2
 import numpy as np
-import time
 import pyaudio
 import socket
-import wave
-import pickle
-import json
 import threading
-import multiprocessing
 
 client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 vidBuffer = []
 audioBuffer = []
-playbackIndex = 0
 vidIndex = 0
 audIndex = 0
 audioNeedsToWait = False
@@ -21,6 +15,8 @@ videoNeedsToWait = False
 rewind = False
 forward = False
 pause = False
+
+
 def getVidData():
     print("connecting to localhost:8080")
     client_socket1.connect(('localhost', 8080))
@@ -61,55 +57,48 @@ def playVideo():
 
     print("In video thread")
     while vidIndex < len(vidBuffer) - 1:
-        if (vidIndex == len(vidBuffer) - 5):
-            videoNeedsToWait = True
-            while (vidIndex > len(vidBuffer) - 20 or audioNeedsToWait):
-                cv2.waitKey(1)
-            videoNeedsToWait = False
+        if audIndex < len(audioBuffer) - 10 and vidIndex < len(vidBuffer) - 10:
+            nparr = np.fromstring(vidBuffer[vidIndex], np.uint8)
 
-        #audioProc = multiprocessing.Process(target=stream.write(audioBuffer[playbackIndex]), args=[])
-        nparr = np.fromstring(vidBuffer[vidIndex], np.uint8)
+            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            if type(frame) is type(None):
+                #print("BAD DATA")
+                pass
+            else:
+                try:
+                    #cv2.imshow('frame', frame)
+                    #threading.Thread(target=stream.write, kwargs={'frames': audio}).start()
+                    cv2.imshow('frame', frame)
+                    #stream.write(audioBuffer[playbackIndex])
+                    #audioProc.start()
+                    #print("Current index: " + str(playbackIndex))
+                    # print("Buffer length: " + str(len(vidBuffer)))
+                    key = cv2.waitKey(21)
+                    if key == ord('q'):
+                        client_socket1.close()
+                        client_socket2.close()
+                        exit(0)
 
-        if type(frame) is type(None):
-            #print("BAD DATA")
-            pass
-        else:
-            try:
-                #cv2.imshow('frame', frame)
-                #threading.Thread(target=stream.write, kwargs={'frames': audio}).start()
-                cv2.imshow('frame', frame)
-                #stream.write(audioBuffer[playbackIndex])
-                #audioProc.start()
-                #print("Current index: " + str(playbackIndex))
-                # print("Buffer length: " + str(len(vidBuffer)))
-                key = cv2.waitKey(21)
-                if key == ord('q'):
+                    if key == ord('a') and vidIndex > 5:
+                        rewind = True
+                        vidIndex -= 5
+                    if key == ord('d') and vidIndex < len(vidBuffer) - 6:
+                        forward = True
+                        vidIndex += 5
+                    if key == ord('p'):
+                        pause = True
+                        while True:
+                            unpause = cv2.waitKey(1)
+                            if (unpause == ord('p')):
+                                pause = False
+                                break
+
+                except:
                     client_socket1.close()
                     client_socket2.close()
                     exit(0)
-
-                if key == ord('a') and vidIndex > 5:
-                    rewind = True
-                    vidIndex -= 5
-                if key == ord('d') and vidIndex < len(vidBuffer) - 6:
-                    forward = True
-                    vidIndex += 5
-                if key == ord('p'):
-                    pause = True
-                    while True:
-                        unpause = cv2.waitKey(1)
-                        if (unpause == ord('p')):
-                            pause = False
-                            break
-
-            except:
-                client_socket1.close()
-                client_socket2.close()
-                exit(0)
-        vidIndex += 1
-
+            vidIndex += 1
 
 def playAudio():
     global audIndex
@@ -126,24 +115,23 @@ def playAudio():
                     rate=44100,
                     output=True)
 
-    while (audIndex < len(audioBuffer) - 1):
+    while audIndex < len(audioBuffer) - 1:
+        if audIndex < len(audioBuffer) - 10 and vidIndex < len(vidBuffer) - 10:
+            stream.write(audioBuffer[audIndex])
+            if rewind:
+                audIndex -= 5
+                rewind = False
+            if forward:
+                audIndex += 5
+                forward = True
+            if pause:
+                while pause:
+                    pass
 
-        stream.write(audioBuffer[audIndex])
-        if rewind:
-            audIndex -= 5
-            rewind = False
-        if forward:
-            audIndex += 5
-            forward = True
-        if pause:
-            while pause:
+            if audIndex > vidIndex + 1:
                 pass
-
-        if audIndex > vidIndex + 1:
-            pass
-        else:
-            #audIndex = vidIndex
-            audIndex += 1
+            else:
+                audIndex += 1
 def main():
 
     threading.Thread(target=getVidData, args=[]).start()
