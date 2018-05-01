@@ -7,11 +7,13 @@ import wave
 import pickle
 import json
 import threading
+import multiprocessing
 
 client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 vidBuffer = []
 audioBuffer = []
+playbackIndex = 0
 
 def getVidData():
     print("connecting to localhost:8080")
@@ -43,29 +45,22 @@ def getAudData():
         print("closing socket 8081")
         client_socket2.close()
 
-def main():
-
-    wf = wave.open("Man's Not Hot.wav")
+def playVideo():
+    global playbackIndex
+    #wf = wave.open("Man's Not Hot.wav")
     p = pyaudio.PyAudio()
 
-    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
+    stream = p.open(format=p.get_format_from_width(2),
+                    channels=2,
+                    rate=44100,
                     output=True)
+    print("Audio initial index: " + str(playbackIndex))
+    #while audioBuffer[playbackIndex] is not None:
 
-    threading.Thread(target=getVidData, args=[]).start()
-    threading.Thread(target=getAudData, args=[]).start()
-    while len(vidBuffer) < 20:
-        #print(len(vidBuffer))
-        pass
-
-    index = 1
-    print("Buffer: " + str(len(vidBuffer)))
-    while True:
-        if index == (len(vidBuffer) - 1):
-            print("Index: " + str(index))
-            time.sleep(2)
-        nparr = np.fromstring(vidBuffer[index], np.uint8)
+    print("In video thread")
+    while vidBuffer[playbackIndex] is not None:
+        #audioProc = multiprocessing.Process(target=stream.write(audioBuffer[playbackIndex]), args=[])
+        nparr = np.fromstring(vidBuffer[playbackIndex], np.uint8)
 
         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
@@ -74,18 +69,50 @@ def main():
             pass
         else:
             try:
+                #cv2.imshow('frame', frame)
                 cv2.imshow('frame', frame)
-                stream.write(audioBuffer[index])
-                print("Current index: " + str(index))
-                #print("Buffer length: " + str(len(vidBuffer)))
-                if cv2.waitKey(41) == ord('q'):
+                #stream.write(audioBuffer[playbackIndex])
+                #audioProc.start()
+                #print("Current index: " + str(playbackIndex))
+                # print("Buffer length: " + str(len(vidBuffer)))
+                key = cv2.waitKey(41)
+                if key == ord('q'):
                     client_socket1.close()
                     client_socket2.close()
                     exit(0)
+
+                if key == ord('a') and playbackIndex > 5:
+                    playbackIndex -= 5
+                if key == ord('d') and playbackIndex < len(vidBuffer) - 6 and playbackIndex < len(audioBuffer) - 6:
+                    playbackIndex += 5
+                if key == ord('p'):
+                    while True:
+                        unpause = cv2.waitKey(1)
+                        if (unpause == ord('p')):
+                            break
+
             except:
                 client_socket1.close()
                 client_socket2.close()
                 exit(0)
-        index += 1
+        playbackIndex += 1
+
+
+def playAudio():
+    global playbackIndex
+
+
+def main():
+
+    threading.Thread(target=getVidData, args=[]).start()
+    threading.Thread(target=getAudData, args=[]).start()
+    while len(vidBuffer) < 20:
+        print(len(vidBuffer))
+        pass
+
+    index = 1
+    print("Buffer: " + str(len(vidBuffer)))
+
+    threading.Thread(target=playVideo(),args=[]).start()
 
 main()
