@@ -8,54 +8,61 @@ import pickle
 import json
 import threading
 
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 vidBuffer = []
 audioBuffer = []
 
-def getData():
-    print("connecting to localhost")
-    client_socket.connect(('localhost', 8080))
-    vid_data = client_socket.recv(1024)
+def getVidData():
+    print("connecting to localhost:8080")
+    client_socket1.connect(('localhost', 8080))
+    vid_data = client_socket1.recv(1024)
     print(vid_data.decode())
     try:
         while vid_data:
-            # current_step = client_socket.recv(1024)
-
             # Stuff to get video frame size
-            client_socket.send("ready".encode())
-            vid_data = client_socket.recv(64)
-            print(vid_data)
+            client_socket1.send("ready".encode())
+            vid_data = client_socket1.recv(64)
             vid_data = vid_data.rstrip(b'\x00')
-            print(vid_data)
             data_str = vid_data.decode()
             frame_size = ord(data_str)
 
             print("Frame Size: " + str(frame_size))
-            client_socket.send("Got it".encode())
+            client_socket1.send("Got it".encode())
 
             #Get Frame
-            vid_data = client_socket.recv(frame_size)
+            vid_data = client_socket1.recv(frame_size)
 
             vidBuffer.append(vid_data)
             #print("Buffer Length: " + str(len(vidBuffer)))
 
+        #print("whole video loaded")
+    finally:
+        print("closing socket 8080")
+        client_socket1.close()
+
+def getAudData():
+    print("connecting to localhost:8081")
+    client_socket2.connect(('localhost', 8081))
+    aud_data = client_socket2.recv(1024)
+    print(aud_data.decode())
+    try:
+        while aud_data:
             #Request Audio
-            client_socket.send("need audio".encode())
+            client_socket2.send("need audio".encode())
 
             #Stuff to get audio size
-            audio_data = client_socket.recv(1024)
-            audio_size = int(audio_data.decode())
-            #print("Audio Size: " + str(audio_size))
-            client_socket.send("Got it".encode())
+            aud_data = client_socket2.recv(1024)
+            audio_size = int(aud_data.decode())
+            print("Audio Size: " + str(audio_size))
+            client_socket2.send("Got it".encode())
 
             #Get Audio
-            audioBuffer.append(client_socket.recv(7369))
-            client_socket.send("done".encode())
-
-        print("whole video loaded")
+            audioBuffer.append(client_socket2.recv(7369))
+            client_socket2.send("done".encode())
     finally:
-        print("closing socket")
-        client_socket.close()
+        print("closing socket 8081")
+        client_socket2.close()
 
 def main():
 
@@ -67,7 +74,8 @@ def main():
                     rate=wf.getframerate(),
                     output=True)
 
-    threading.Thread(target=getData, args=[]).start()
+    threading.Thread(target=getVidData, args=[]).start()
+    threading.Thread(target=getAudData, args=[]).start()
     while len(vidBuffer) < 20:
         #print(len(vidBuffer))
         pass
@@ -92,10 +100,12 @@ def main():
                 print("Current index: " + str(index))
                 #print("Buffer length: " + str(len(vidBuffer)))
                 if cv2.waitKey(41) == ord('q'):
-                    client_socket.close()
+                    client_socket1.close()
+                    client_socket2.close()
                     exit(0)
             except:
-                client_socket.close()
+                client_socket1.close()
+                client_socket2.close()
                 exit(0)
         index += 1
 
