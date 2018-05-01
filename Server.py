@@ -47,36 +47,21 @@ def main():
         new_connection2, client_address2 = sock2.accept()
 
         try:
-            #print('connection from', client_address)
-
+            print('connection from', client_address1)
             new_connection1.send("Starting".encode())
+            new_connection1.recv(1024)
+
+            new_connection2.send("Starting".encode())
+            new_connection2.recv(1024)
             while True:
                 ret, frame = cap.read()
                 audio = wf.readframes(CHUNK)
 
                 frame_data = cv2.imencode('.jpg', frame)[1]
 
-                new_connection1.recv(1024)
-                #strsize = 64 - sys.getsizeof(str(sys.getsizeof(frame_data)).encode())
-                strsize = 64 - sys.getsizeof(chr(sys.getsizeof(frame_data)).encode())
-                pad_data = chr(sys.getsizeof(frame_data)).encode() + ("\0"*strsize).encode()
-                print(pad_data)
-                print(sys.getsizeof(pad_data))
-                new_connection1.send(pad_data)
-                new_connection1.recv(1024)
                 new_connection1.send(frame_data)
 
-               # print("sending frame")
-
-                print('Receiving audio handshake...')
-                # getting stuck on this recv
-                new_connection2.recv(1024)
-                print('received handshake')
-                new_connection2.send(str(sys.getsizeof(audio)).encode())
-                print("Audio Size: " + str(sys.getsizeof(audio)))
-                new_connection2.recv(1024)
                 new_connection2.send(audio)
-                new_connection2.recv(1024)
 
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break

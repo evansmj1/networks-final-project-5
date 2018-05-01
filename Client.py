@@ -18,25 +18,14 @@ def getVidData():
     client_socket1.connect(('localhost', 8080))
     vid_data = client_socket1.recv(1024)
     print(vid_data.decode())
+    client_socket1.send("Ready".encode())
     try:
         while vid_data:
-            # Stuff to get video frame size
-            client_socket1.send("ready".encode())
-            vid_data = client_socket1.recv(64)
-            vid_data = vid_data.rstrip(b'\x00')
-            data_str = vid_data.decode()
-            frame_size = ord(data_str)
-
-            print("Frame Size: " + str(frame_size))
+            vid_data = client_socket1.recv(500000)
             client_socket1.send("Got it".encode())
-
-            #Get Frame
-            vid_data = client_socket1.recv(frame_size)
-
             vidBuffer.append(vid_data)
-            #print("Buffer Length: " + str(len(vidBuffer)))
 
-        #print("whole video loaded")
+        print("whole video loaded")
     finally:
         print("closing socket 8080")
         client_socket1.close()
@@ -46,20 +35,10 @@ def getAudData():
     client_socket2.connect(('localhost', 8081))
     aud_data = client_socket2.recv(1024)
     print(aud_data.decode())
+    client_socket2.send("ready".encode())
     try:
         while aud_data:
-            #Request Audio
-            client_socket2.send("need audio".encode())
-
-            #Stuff to get audio size
-            aud_data = client_socket2.recv(1024)
-            audio_size = int(aud_data.decode())
-            print("Audio Size: " + str(audio_size))
-            client_socket2.send("Got it".encode())
-
-            #Get Audio
             audioBuffer.append(client_socket2.recv(7369))
-            client_socket2.send("done".encode())
     finally:
         print("closing socket 8081")
         client_socket2.close()
